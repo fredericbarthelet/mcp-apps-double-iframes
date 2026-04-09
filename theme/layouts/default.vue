@@ -8,7 +8,7 @@
       class="absolute bottom-0 left-0 w-56 opacity-20 pointer-events-none"
       alt=""
     />
-    <div class="relative z-10 h-full flex flex-col justify-center">
+    <div class="relative z-10 h-full flex flex-col title-top">
       <slot />
     </div>
   </div>
