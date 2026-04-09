@@ -36,9 +36,15 @@ Hi everyone! I'm Frederic, co-founder at Alpic — we build infrastructure for A
 <div class="mt-6 flex items-center gap-12">
   <div>
     <ul class="space-y-3 text-lg">
-      <li>First <span class="highlight font-semibold">MCP</span> official extension</li>
-      <li><span class="accent font-semibold">Distribute your app</span> over stores on ChatGPT and Claude</li>
+      <li><span class="accent font-semibold">Discoverability</span> in-chat and in stores on ChatGPT and Claude</li>
       <li><span class="accent font-semibold">Interactive UI</span> inside AI chats</li>
+      <li>
+        <ul class="ml-6 space-y-2">
+          <li>Liad and Ido experimenting with <span class="highlight font-semibold">MCP-UI</span></li>
+          <li>Initially released on ChatGPT as <span class="highlight font-semibold">OpenAI's Apps SDK</span></li>
+          <li>Standardized as <span class="highlight font-semibold">MCP</span> first official extension</li>
+        </ul>
+      </li>
     </ul>
   </div>
   <div>
@@ -103,16 +109,14 @@ If ui.resourceUri is present and host supports MCP Apps, host renders tool resul
 
 # Zooming into the [View]{.accent}
 
-<div class="card mt-6" style="font-family: 'Roboto Mono', monospace; font-size: 0.7em; line-height: 1.8;">
-  <p><span class="opacity-40">&lt;body&gt;</span> <span class="opacity-30">chatgpt.com</span></p>
-  <p class="ml-4"><span class="opacity-40">&lt;div id="root"&gt; ...</span></p>
-  <p class="ml-8"><span class="accent">&lt;iframe</span> <span class="opacity-50">src="<span class="highlight">abc123.web-sandbox.oaiusercontent.com</span>"</span></p>
-  <p class="ml-12"><span class="opacity-50">sandbox="<span class="highlight">allow-scripts allow-same-origin</span>"&gt;</span></p>
-  <p class="ml-12"><span class="accent">&lt;iframe</span> <span class="opacity-50">srcdoc="..."</span></p>
-  <p class="ml-16"><span class="opacity-50">allow="<span class="highlight">camera; microphone</span>"&gt;</span></p>
-  <p class="ml-16"><span class="opacity-60">&lt;div&gt; Your App &lt;/div&gt;</span></p>
-  <p class="ml-12"><span class="accent">&lt;/iframe&gt;</span></p>
+<div class="card mt-6 font-['Roboto_Mono'] text-[0.7em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span> <span class="opacity-50 highlight">chatgpt.com</span></p>
+  <p class="ml-4"><span class="accent">&lt;iframe</span> <span class="opacity-50">src="<span class="highlight">abc123.web-sandbox.oaiusercontent.com</span>"&gt;</span></p>
+  <p class="ml-8"><span class="accent">&lt;iframe</span> <span class="opacity-50">srcdoc="..."&gt;</span></p>
+  <p class="ml-12"><span class="opacity-60">&lt;div&gt; Your App &lt;/div&gt;</span></p>
   <p class="ml-8"><span class="accent">&lt;/iframe&gt;</span></p>
+  <p class="ml-4"><span class="accent">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
 </div>
 
 <p class="text-2xl mt-8 text-center font-semibold">Why <span class="accent">two</span> iframes?</p>
@@ -419,7 +423,27 @@ Four takeaways. One: the double iframe isn't defense-in-depth — it solves a CS
 
 ---
 
-## layout: end
+# Scan, star, [win a mask]{.accent}
+
+<div class="flex items-center justify-center gap-16 mt-6">
+  <div>
+    <img src="/qr-skybridge.svg" class="w-64 h-64" alt="QR code to Skybridge GitHub" />
+  </div>
+  <div class="space-y-4">
+    <p class="text-2xl font-semibold">1. Scan the QR code</p>
+    <p class="text-2xl font-semibold">2. Star the repo <span class="accent">⭐</span></p>
+    <p class="text-2xl font-semibold">3. Enter the lottery <span class="highlight">🎭</span></p>
+    <p class="text-sm opacity-40 mt-6 font-mono">github.com/alpic-ai/skybridge</p>
+  </div>
+</div>
+
+<!--
+Before we wrap up — scan this QR code, it takes you to the Skybridge GitHub repo. Star the project, and you're automatically entered in our lottery to win a mask. Go ahead, I'll wait. It takes 5 seconds.
+-->
+
+---
+layout: end
+---
 
 # [Thank you!]{.accent}
 
