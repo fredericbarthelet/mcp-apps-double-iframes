@@ -310,7 +310,7 @@ requires the infrastructure to host all MCP servers views with a dynamic server 
 
 ---
 
-# The [double iframe]{.accent}
+# What if - the [double iframe]{.accent}
 
 <div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
   <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
@@ -331,12 +331,11 @@ requires the infrastructure to host all MCP servers views with a dynamic server 
 
 <!--
 one sandbox page on web-sandbox.oaiusercontent.com used to load resource and create inner iframe with srcdoc and sandbox allow-scripts allow-same-origin
-
 -->
 
 ---
 
-# The double iframe on [app-specific subdomain]{.accent}
+# What if - double iframe on [app-specific subdomain]{.accent}
 
 <div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
   <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
@@ -362,272 +361,92 @@ still use subdomain even if same content for app localStorage isolation
 
 ---
 
-# The [solution]{.accent}
+# The solution - double iframe on app-specific subdomain [with CSP]{.accent}
 
-```mermaid
-flowchart LR
-  Host["🌐 Host page"] -->|"frame-src ✓"| Outer["📦 Sandbox page"]
-  Outer -->|"postMessage"| Inner["🔒 Per-app CSP"]
-  Inner --> App["⚡ Your App"]
-```
-
-<div class="mt-6 grid grid-cols-2 gap-8">
-  <div class="card text-center">
-    <p class="text-xs font-mono accent mb-2">ChatGPT</p>
-    <p class="text-base font-semibold highlight">*.web-sandbox.oaiusercontent.com</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-xs font-mono accent mb-2">Claude</p>
-    <p class="text-base font-semibold highlight">*.claudemcpcontent.com</p>
-  </div>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p class="opacity-40">frame-src 'self' *.stripe.com *.youtube.com … *.web-sandbox.oaiusercontent.com</p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4 opacity-40"><span class="accent">&lt;iframe</span> src="https://abc123.web-sandbox.oaiusercontent.com"&gt;</p>
+  <p class="ml-8"><span class="highlight">&lt;meta</span> http-equiv="Content-Security-Policy" content="connect-src 'my-service.com'"&gt;</p>
+  <p class="ml-8 opacity-40">&lt;script&gt;initializeApp()&lt;/script&gt;</p>
+    <p class="ml-8 opacity-40"><span class="accent">&lt;iframe</span> srcdoc="…" sandbox="allow-scripts allow-same-origin"&gt;</p>
+  <p class="ml-12"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-8"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
 </div>
 
-<p class="text-xs opacity-40 mt-6 text-center">15+ year old pattern — Facebook Apps (2008), OpenSocial/Yahoo, Shopify embedded apps.</p>
-
 <!--
-The solution: whitelist a single wildcard domain in frame-src. ChatGPT uses web-sandbox.oaiusercontent.com. Claude uses claudemcpcontent.com. That domain acts as a sandbox proxy — receives your app's HTML via postMessage, creates an inner iframe, and applies a per-app CSP. The host's own CSP stays tight. And this isn't new — Facebook did it in 2008 with page_proxy.php, OpenSocial and Yahoo used Apache Shindig, Shopify does it today. The pattern is 15+ years old.
+enforcing strict CSP by default
+allow configuration via _meta.ui.csp
+inspectable via resources/read request
 -->
 
 ---
 
-# Three [security layers]{.accent}
+# You must [declare all domains]{.accent} your app [depends on]{.accent}
 
-<!-- TODO: placeholder — diagram showing the three concentric layers: host CSP (outermost), sandbox proxy (middle), per-app CSP (innermost), with labels showing what each controls -->
-<div class="card flex items-center justify-center mt-4" style="height: 140px;">
-  <p class="text-xs opacity-30 text-center">📷 Illustration: concentric layers diagram — Host CSP → Sandbox proxy → Per-app CSP</p>
-</div>
-
-<div class="mt-4 grid grid-cols-3 gap-4">
-  <div class="card text-center">
-    <p class="text-sm font-semibold accent mb-2">Host CSP</p>
-    <p class="text-xs opacity-50">Nonce-based scripts<br/>Specific allowlists<br/>Violation reporting</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-sm font-semibold accent mb-2">Sandbox proxy</p>
-    <p class="text-xs opacity-50">allow-scripts<br/>allow-same-origin<br/>Different origin = safe</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-sm font-semibold accent mb-2">Per-app CSP</p>
-    <p class="text-xs opacity-50">connectDomains<br/>resourceDomains<br/>frameDomains</p>
-  </div>
-</div>
-
-<!--
-Three layers working together. Layer 1: the host's own CSP — nonce-based scripts, tight allowlists, Datadog violation reporting. Claude uses strict-dynamic, even stricter than ChatGPT. Layer 2: the sandbox proxy on the outer iframe with sandbox attributes. It's safe to use allow-scripts and allow-same-origin together because the proxy is on a different origin from the host, so there's no escape to the host DOM. Layer 3: the per-app CSP on the inner iframe, set by the proxy from _meta.ui.csp metadata. connectDomains, resourceDomains, frameDomains. If you declare nothing, the default is fully restrictive — no external connections allowed.
--->
-
----
-
-## layout: light
-
-# CSP negotiation: [what you can configure]{.accent}
-
-| Manifest field    | CSP directive(s)                                          | Unlocks                                 |
+| _meta.ui.csp field    | CSP directive(s)                                          | Unlocks                                 |
 | ----------------- | --------------------------------------------------------- | --------------------------------------- |
 | `connectDomains`  | `connect-src`                                             | fetch, XHR, WebSocket                   |
 | `resourceDomains` | `script-src` `style-src` `font-src` `img-src` `media-src` | External scripts, styles, fonts, images |
 | `frameDomains`    | `frame-src`                                               | Nested iframes (maps, video)            |
 | `baseUriDomains`  | `base-uri`                                                | Custom base URIs                        |
 
-<div class="mt-6 text-center">
-  <p class="text-base font-semibold">Declaration ≠ authorization</p>
-  <p class="text-sm opacity-50">App requests → host decides. Each app gets its own CSP.</p>
-</div>
-
 <!--
-Here's what you can configure today. connectDomains for API calls, resourceDomains for scripts and fonts, frameDomains for nested iframes. You declare them in your manifest, the host merges them into the CSP. But — and this is important — declaration is not authorization. The app requests, the host decides. Each app gets its own policy. That's fundamentally different from just putting frame-src star. It's like requesting specific room keys at the front desk versus being given a master key.
+declaration used in app validation
 -->
 
 ---
 
-# Permissions negotiation — [already in the spec]{.accent}
+# [CSP]{.accent} is the new [CORS]{.accent}
 
-<div class="grid grid-cols-2 gap-8 mt-6">
-  <div class="card">
-    <p class="text-xs font-mono accent mb-2">Manifest</p>
+<img src="/Gemini_Generated_Image_cz7ll3cz7ll3cz7l.png" class="rounded-lg mx-auto mt-4" style="max-height: 380px;" />
 
-```json
-{
-  "permissions": {
-    "camera": {},
-    "microphone": {},
-    "geolocation": {},
-    "clipboardWrite": {}
-  }
-}
-```
+---
 
+# Improving builder [DevX]{.accent}
+
+<div class="flex items-center gap-8 mt-4">
+  <img src="/openai-csp-in-dev.png" class="rounded-lg" style="max-height: 340px;" />
+  <div class="space-y-4">
+    <p class="text-base">ChatGPT now <span class="highlight">relaxes CSP in developer mode</span> by default</p>
+    <p class="text-sm opacity-50">Dev apps get unrestricted network access — no need to declare domains while iterating</p>
+    <p class="text-sm opacity-50">Toggle on "Enforce CSP" to test production behavior before shipping</p>
   </div>
-  <div class="flex flex-col justify-center space-y-4">
-    <p class="text-lg font-semibold">→ iframe <code class="highlight">allow</code> attribute</p>
-    <p class="text-lg font-semibold">→ <code class="highlight">hostCapabilities</code> reports back</p>
-    <p class="text-sm opacity-40 mt-4">PR #158 — merged Jan 2026<br/>VSCode + Goose adopted same day</p>
+</div>
+
+---
+
+# Improving builder DevX with [Skybridge]{.accent}
+
+<div class="flex items-center gap-6 mt-6">
+  <img src="/logos/skybridge/icon-only-white.svg" class="h-16" />
+  <p class="text-lg font-mono opacity-60">skybridge.tech</p>
+</div>
+
+<div class="mt-6 grid grid-cols-3 gap-6">
+  <div class="card text-center">
+    <p class="text-sm font-semibold accent mb-2">CSP Inspector</p>
+    <p class="text-xs opacity-50">See the exact policy applied to your app per host — at runtime</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-sm font-semibold accent mb-2">CSP Validation</p>
+    <p class="text-xs opacity-50">Catch missing domains at build time before your fetch silently fails</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-sm font-semibold accent mb-2">Cross-host testing</p>
+    <p class="text-xs opacity-50">Verify CSP behavior across ChatGPT, Claude & Cursor from one codebase</p>
   </div>
 </div>
 
 <!--
-Permissions negotiation is already in the spec — PR 158, merged January 2026. VSCode and Goose adopted it the same day. Apps declare what browser features they need in their metadata. The sandbox proxy maps that to the allow attribute on the inner iframe. Hosts report back what was actually granted via hostCapabilities so apps can check at init time and degrade gracefully. There's even a live speech transcription example using microphone and clipboard-write in the repo.
--->
-
----
-
-# Host readiness: who [allows what]{.accent}?
-
-<div class="grid grid-cols-3 gap-4 mt-6">
-  <div class="card text-center">
-    <p class="text-base font-mono accent mb-4">Claude</p>
-    <div class="space-y-2">
-      <p class="text-lg"><span class="highlight">camera</span> ✓</p>
-      <p class="text-lg"><span class="highlight">microphone</span> ✓</p>
-      <p class="text-lg"><span class="highlight">geolocation</span> ✓</p>
-      <p class="text-lg"><span class="highlight">clipboard</span> ✓</p>
-    </div>
-    <p class="text-sm highlight mt-4 font-semibold">Ready</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-base font-mono accent mb-4">ChatGPT</p>
-    <div class="space-y-2">
-      <p class="text-lg">camera <span class="accent">✗</span></p>
-      <p class="text-lg">microphone <span class="accent">✗</span></p>
-      <p class="text-lg">geolocation <span class="accent">✗</span></p>
-      <p class="text-lg">clipboard <span class="accent">✗</span></p>
-    </div>
-    <p class="text-sm accent mt-4 font-semibold">Blocked</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-base font-mono accent mb-4">Others</p>
-    <div class="mt-6">
-      <p class="text-lg opacity-60">No header</p>
-      <p class="text-sm opacity-40 mt-2">Permissive by default</p>
-    </div>
-    <p class="text-sm highlight mt-4 font-semibold">Ready by omission</p>
-  </div>
-</div>
-
-<p class="text-xs opacity-40 mt-4 text-center">Two gates: host Permissions-Policy + iframe allow. Most restrictive wins.</p>
-
-<!--
-Who's ready? We curled every host. Claude explicitly grants camera, microphone, geolocation, and clipboard-write to its MCP proxy domain — claudemcpcontent.com. Ready. ChatGPT blocks every single permission at the host level with empty parens — not ready yet. Though interestingly, the sandbox proxy itself reportedly allows microphone and midi. Postman, Goose, and VSCode don't send a Permissions-Policy header at all, which means permissive by default. Remember there are two gates — the host Permissions-Policy is the first, the iframe allow attribute is the second. Most restrictive wins.
--->
-
----
-
-# Use cases & [what's next]{.accent}
-
-<div class="grid grid-cols-2 gap-8 mt-6">
-  <div class="space-y-3">
-    <div class="card">
-      <p class="text-base font-semibold highlight">🎤 Camera & Mic</p>
-      <p class="text-xs opacity-50">Voice apps, barcode scanning, speech transcription</p>
-    </div>
-    <div class="card">
-      <p class="text-base font-semibold highlight">📍 Geolocation</p>
-      <p class="text-xs opacity-50">Store locators, delivery tracking</p>
-    </div>
-    <div class="card">
-      <p class="text-base font-semibold highlight">📋 Clipboard</p>
-      <p class="text-xs opacity-50">Copy generated code</p>
-    </div>
-    <div class="card" style="opacity: 0.35;">
-      <p class="text-base font-semibold">💳 Payment</p>
-      <p class="text-xs opacity-50">Not yet — in-chat checkout</p>
-    </div>
-  </div>
-  <div>
-    <p class="text-base font-semibold accent mb-3">Coming in v2 — Sandbox flags</p>
-    <p class="text-sm opacity-50 mb-4">PR #355 — capabilities become negotiable</p>
-    <div class="card text-center">
-      <p class="text-sm font-mono opacity-60">forms · popups · modals · downloads</p>
-      <p class="text-xs opacity-40 mt-2">Even <code>allow-forms</code> must be requested</p>
-    </div>
-    <!-- TODO: placeholder — diagram showing the full negotiation picture: CSP (stable) / Permissions (v1) / Sandbox flags (v2) as three stacked layers -->
-    <div class="card flex items-center justify-center mt-4" style="height: 80px;">
-      <p class="text-xs opacity-30 text-center">📷 Illustration: 3 negotiation layers — CSP / Permissions / Sandbox flags</p>
-    </div>
-  </div>
-</div>
-
-<!--
-What does this unlock? Camera and mic for voice apps and speech transcription. Geolocation for store locators and delivery tracking. Clipboard for copying generated code. Payment is the dream — in-chat checkout — but no host grants it yet and it's not in the spec. Coming in v2 via PR 355: sandbox flags become negotiable. Forms, popups, modals, downloads — all must be explicitly requested. Even allow-forms, which was previously assumed, now needs to be negotiated. The baseline is getting stricter. Three layers of negotiation: CSP directives which are stable, permissions which landed in v1, and sandbox flags coming in v2.
--->
-
----
-
-## layout: section
-
-# The [dangers]{.accent}
-
-<!--
-Now let's talk about what goes wrong. This is the part that'll save you from security headaches.
--->
-
----
-
-# The classic [sandbox escape]{.accent}
-
-<p class="text-lg font-semibold accent mt-6">allow-scripts + allow-same-origin = 💀</p>
-
-```javascript
-const frame = window.parent.document.querySelector("iframe");
-frame.removeAttribute("sandbox");
-frame.src = frame.src; // full escape
-```
-
-<div class="card mt-6">
-  <p class="text-base font-semibold highlight">MCP Apps uses both — and it's safe.</p>
-  <p class="text-sm opacity-50 mt-2">The proxy is on a <strong>different origin</strong>. The escape only works same-origin.</p>
-</div>
-
-<p class="text-sm accent mt-4 font-semibold">Origin isolation is the real security boundary.</p>
-
-<!--
-The classic sandbox escape: allow-scripts plus allow-same-origin. When both are present, the iframe can reach into the parent DOM, remove its own sandbox attribute, and reload unrestricted. Three lines of code and the sandbox is gone. But wait — the MCP spec actually uses both on the outer iframe! Isn't that dangerous? No — because the proxy is on a different origin from the host. The escape only works when the iframe is same-origin with its parent. Origin isolation is the real security boundary, not the sandbox attribute alone.
--->
-
----
-
-# When hosts [open too wide]{.accent}
-
-<div class="mt-6 grid grid-cols-2 gap-6">
-  <div class="card text-center">
-    <p class="stat text-3xl">🎣</p>
-    <p class="text-sm font-semibold accent mt-2">allow-top-navigation</p>
-    <p class="text-xs opacity-50">Redirect to phishing site</p>
-  </div>
-  <div class="card text-center">
-    <p class="stat text-3xl">📤</p>
-    <p class="text-sm font-semibold accent mt-2">connect-src *</p>
-    <p class="text-xs opacity-50">Data exfiltration</p>
-  </div>
-  <div class="card text-center">
-    <p class="stat text-3xl">👆</p>
-    <p class="text-sm font-semibold accent mt-2">Broad frame-src</p>
-    <p class="text-xs opacity-50">Clickjacking</p>
-  </div>
-  <div class="card text-center">
-    <p class="stat text-3xl">👁️</p>
-    <p class="text-sm font-semibold accent mt-2">Loose Permissions Policy</p>
-    <p class="text-xs opacity-50">Rogue camera/mic</p>
-  </div>
-</div>
-
-<!--
-What goes wrong when hosts are too permissive? allow-top-navigation lets a malicious app redirect the entire ChatGPT or Claude page to a phishing site — the user thinks they're still in ChatGPT but they're on evil.com. A wildcard connect-src lets apps silently exfiltrate conversation data, auth tokens, user messages to any server. Broad frame-src enables clickjacking via invisible overlaid iframes. And a loose Permissions Policy could let a rogue app activate your camera or mic through what looks like a harmless chat widget. This is exactly why hosts are conservative — and why you should be too when requesting permissions.
--->
-
----
-
-# [Takeaways]{.accent}
-
-<div class="mt-8 space-y-8">
-  <p class="text-xl font-semibold">1. Double iframe solves a <span class="highlight">CSP whitelist problem</span></p>
-  <p class="text-xl font-semibold">2. Permissions negotiation is <span class="highlight">already in the spec</span></p>
-  <p class="text-xl font-semibold">3. Sandbox flags are <span class="accent">coming in v2</span></p>
-  <p class="text-xl font-semibold">4. <span class="accent">Respect the sandbox</span> — request only what you need</p>
-</div>
-
-<!--
-Four takeaways. One: the double iframe isn't defense-in-depth — it solves a CSP whitelist problem. One proxy domain is the gateway for all apps. Two: permissions negotiation is already in the spec since January 2026. Claude already grants camera, mic, geolocation, clipboard at the host level. ChatGPT doesn't yet. Three: sandbox flags are coming in v2 — forms, popups, modals, downloads will all need to be explicitly requested. Four: respect the sandbox. Origin isolation is the real boundary. Request only what you need.
+Skybridge ships with built-in CSP devtools. The inspector shows the exact policy each host applies to your app at runtime. The validator catches missing domains at build time — so you don't discover a blocked fetch in production. And you can test across all hosts from a single codebase.
 -->
 
 ---
