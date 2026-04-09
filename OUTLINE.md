@@ -31,6 +31,42 @@
 
 ## Part 2 — Why a Double Iframe? (3 slides, ~4 min)
 
+### Single iFrame with srcdoc
+- just the body and a single iframe with src to about:blank
+- HTML content injected by host using `srcdoc` attribute
+- Problem: If `srcdoc` is used without `sandbox` attribute, CSP will be inherited from the parent frame. ChatGPT's script-src is nonce-based, all scripts tags in your view will be blocked.
+
+### Single iFrame with srcdoc and script-src relaxed
+- just the body and a single iframe with src to about:blank and `srcdoc` attribute
+- chatgpt.com CSP header on scripts is relaxed
+- Problem: your iFramed view inherits chatgpt.com origin. Your scripts can access ChatGPT's cookies, local storage, DOM...
+
+### Single iFrame with srcdoc and sandbox allow-scripts
+- just the body and a single iframe with src to about:blank and `srcdoc` attribute
+- new `sandbox` attribute is used to enforce a new CSP for the inner iframe with `allow-scripts`
+- Problem: Browser assigns an opaque origin to the iframe. Can't use at all local storage, cookies, indexedDB, etc.
+
+### Single iFrame with srcdoc and sandbox allow-scripts and allow-same-origin
+- just the body and a single iframe with src to about:blank and `srcdoc` attribute
+- updated `sandbox` attribute with added `allow-same-origin`
+- Problem: your iFramed view inherits chatgpt.com origin. Your scripts can access ChatGPT's cookies, local storage, DOM... We need to use a different origin for the iframe
+
+### Single iFrame with src 
+- just the body and a single iframe with src to MCP server domain
+- switching from srcdoc to src enables origin isolation
+- using views exposed as SPA from MCP servers domains
+- Problem: chatgpt.com CSP header on frame-src is restrictive. Opening up to * is too wide.
+
+### Single iFrame with src on controlled domain
+- just the body and a single iframe with src to a different origin
+- switching from MCP server domain to a different origin controled by chatgpt.com. Adding *.oaiusercontent.com to frame-src CSP directive on chatgpt.com. Content is downloaded with resources/read request, cached, and served from an app-specific subdomain of oaiusercontent.com
+- Problem: xxxx
+
+### Double iFrame
+- just the body and a single iframe with src to a different origin
+- the same sandbox is served on all subdomains of *.web-sandbox.oaiusercontent.com
+- the sandbox starts the view using iframe with srcdoc and sandbox allow-scripts allow-same-origin on the app-specific subdomain of web-sandbox.oaiusercontent.com
+
 ### 4. The problem: hosts have their own CSP
 - CSP = HTTP header whitelisting which resources a page can load
 - `frame-src` controls which domains can appear in iframes

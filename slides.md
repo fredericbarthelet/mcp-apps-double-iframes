@@ -112,7 +112,7 @@ If ui.resourceUri is present and host supports MCP Apps, host renders tool resul
 <div class="card mt-6 font-['Roboto_Mono'] text-[0.7em] leading-[1.8] w-max mx-auto">
   <p><span class="opacity-40">&lt;body&gt;</span> <span class="opacity-50 highlight">chatgpt.com</span></p>
   <p class="ml-4"><span class="accent">&lt;iframe</span> <span class="opacity-50">src="<span class="highlight">abc123.web-sandbox.oaiusercontent.com</span>"&gt;</span></p>
-  <p class="ml-8"><span class="accent">&lt;iframe</span> <span class="opacity-50">srcdoc="..."&gt;</span></p>
+  <p class="ml-8"><span class="accent">&lt;iframe</span> <span class="opacity-50">src="about:blank"&gt;</span></p>
   <p class="ml-12"><span class="opacity-60">&lt;div&gt; Your App &lt;/div&gt;</span></p>
   <p class="ml-8"><span class="accent">&lt;/iframe&gt;</span></p>
   <p class="ml-4"><span class="accent">&lt;/iframe&gt;</span></p>
@@ -127,28 +127,237 @@ Open DevTools on any ChatGPT app and here's what you'll see. The host page at ch
 
 ---
 
-# The [CSP]{.accent} problem
+# Before AI Apps — [the host page]{.accent}
 
-<div class="card mt-6">
-  <p class="text-xs font-mono accent mb-2">ChatGPT's frame-src</p>
+<div class="grid grid-cols-[1fr_1.4fr] gap-6 mt-2">
+<div>
 
-```
-frame-src 'self' challenges.cloudflare.com *.js.stripe.com
-  *.sharepoint.com accounts.google.com auth.openai.com
-  docs.google.com hooks.stripe.com js.stripe.com
-  onedrive.live.com player.vimeo.com www.youtube.com
-  *.web-sandbox.oaiusercontent.com  ← 🔍
-```
-
+<div class="card py-2 px-3 font-['Roboto_Mono'] text-[0.7em] w-max leading-[1.5]">
+  <p><span class="text-[1.1em] accent font-semibold mb-1">chatgpt.com</span> Content-Security-Policy</p>
+  <p>default-src <span class="accent">'self'</span></p>
+  <p>script-src <span class="accent">'nonce-…' https://*.chatgpt.com</span></p>
+  <p>style-src <span class="accent">'self' 'unsafe-inline'</span></p>
+  <p>connect-src <span class="accent">'self' *.openai.com wss://*.chatgpt.com</span></p>
+  <p>img-src <span class="accent">'self' * blob: data: https:</span></p>
+  <p>frame-src <span class="accent">'self' *.stripe.com *.youtube.com …</span></p>
 </div>
 
-<div class="mt-8 text-center">
-  <p class="text-xl font-semibold">Open ecosystem + <span class="accent">finite allowlist</span> = 💥</p>
-  <p class="text-sm opacity-50 mt-4">CSP is the new CORS.</p>
+</div>
+<div>
+
+| Directive   | Allowed values                                                            |
+| ----------- | ------------------------------------------------------------------------- |
+| default-src | `'none'` `'self'` `https:`                                                |
+| script-src  | `'none'` `'nonce-…'` `'strict-dynamic'` `'unsafe-inline'` `'unsafe-eval'` |
+| style-src   | `'self'` `'unsafe-inline'` `'nonce-…'`                                    |
+| connect-src | `'self'` `https:` `wss:`                                                  |
+| img-src     | `'self'` `data:` `blob:`                                                  |
+| frame-src   | `'self'` `'none'` `blob:`                                                 |
+
+</div>
 </div>
 
 <!--
-Every production host has a Content Security Policy. frame-src controls which domains can appear in iframes. Here's ChatGPT's actual frame-src — a finite allowlist. Stripe, Google, YouTube, that's it. But MCP is an open ecosystem where any server can provide UI at any domain. You can't whitelist every app that will ever exist. This is the root cause of the double iframe. And yes — CSP is the new CORS, the config nightmare you'll hit on day one.
+Before we look at iframes, let's look at what ChatGPT sends with every HTTP response. A Content-Security-Policy header — a set of directives that tell the browser exactly what this page is allowed to load. default-src is the fallback: if a specific directive isn't set, default-src applies. script-src controls which scripts can run — ChatGPT uses a nonce, a per-request token, so only scripts with the matching token execute. style-src for stylesheets. connect-src controls where fetch, XHR, and WebSocket calls can go. img-src for images. And frame-src — which URLs are allowed inside iframes. This last one is about to become very important.
+-->
+
+---
+
+# What if — [srcdoc]{.accent}?
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p class="opacity-40">frame-src 'self' *.stripe.com *.youtube.com …</p>
+</div>
+<br/>
+<div class="card mt-3 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent">&lt;iframe</span> srcdoc="…"&gt;</p>
+  <p class="ml-8"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-4"><span class="accent">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<p class="text-lg mt-6 text-center font-semibold"><span class="accent">✗</span> inherits parent CSP without script nonce, <span class="accent">all view scripts blocked</span></p>
+
+<!--
+-->
+
+---
+
+# What if — [relax the CSP]{.accent}?
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p>script-src <span class="accent">'unsafe-inline' 'unsafe-eval'</span> </p>
+  <p class="opacity-40">frame-src 'self' *.stripe.com *.youtube.com …</p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;iframe</span> <span class="opacity-40">srcdoc="…"&gt;</span></p>
+  <p class="ml-8"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<p class="text-lg mt-6 text-center font-semibold"><span class="accent">✗</span> iframe inherits parent's origin — view scripts can access ChatGPT's <span class="accent">cookies, localStorage, DOM</span></p>
+
+<!--
+-->
+
+---
+
+# What if — [sandbox]{.accent}?
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p>script-src <span class="accent">'nonce-…' https://*.chatgpt.com</span></p>
+  <p class="opacity-40">frame-src 'self' *.stripe.com *.youtube.com …</p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;iframe</span> <span class="opacity-40">srcdoc="…"</span> sandbox="allow-scripts"<span class="opacity-40">&gt;</span></p>
+  <p class="ml-8"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<p class="text-lg mt-6 text-center font-semibold"><span class="accent">✗</span> Browser assigns <span class="accent">opaque origin</span> — no localStorage, no cookies, no IndexedDB</p>
+
+<!--
+Sandboxing generates an opaque origin
+srcdoc takes precedence over src, no point trying to set origin on the iframe
+-->
+
+---
+
+# What if — [allow‑same‑origin]{.accent}?
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p class="opacity-40">frame-src 'self' *.stripe.com *.youtube.com …</p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;iframe</span> <span class="opacity-40">srcdoc="…" sandbox="allow-scripts</span> allow-same-origin<span class="opacity-40">"&gt;</span></p>
+  <p class="ml-8"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<p class="text-lg mt-6 text-center font-semibold"><span class="accent">✗</span> <code>srcdoc</code> inherits <code class="highlight">chatgpt.com</code> origin — <span class="accent">sandbox escape</span> possible</p>
+
+<!--
+can't set an origin when iframe has srcdoc
+only way to remove the opaque origin is to use allow-same-origin
+falling back into the same original problem
+-->
+
+---
+
+# What if — [src]{.accent}?
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p class="opacity-40">frame-src 'self' *.stripe.com *.youtube.com …</p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;iframe</span> src="https://my-app.com/view.html"<span class="opacity-40">&gt;</span></p>
+  <p class="ml-8"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<p class="text-lg mt-4 text-center font-semibold"><span class="accent">✗</span> <code>frame-src</code> is a <span class="accent">finite allowlist</span> — can't whitelist every MCP App domain</p>
+
+<!--
+Relaxing frame-src to * is not an option
+requires serving view from MCP server domain instead of resources
+-->
+
+---
+
+# What if — [controlled domain]{.accent}?
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p>frame-src <span class="accent">'self' *.stripe.com *.youtube.com … *.oaiusercontent.com</span></p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;iframe</span> src="https://abc123.oaiusercontent.com"<span class="opacity-40">&gt;</span></p>
+  <p class="ml-8"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<p class="text-lg mt-6 text-center font-semibold"><span class="accent">✗</span> Per-app hosting — <span class="accent">needs heavy dynamic server infrastructure</span></p>
+
+<!--
+Switch back to view as resources
+requires the infrastructure to host all MCP servers views with a dynamic server router that uses subdomain to resources/read request for content and CSP. Content served as payload and CSP as header (can't change CSP after iframe is created)
+-->
+
+---
+
+# The [double iframe]{.accent}
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p>frame-src <span class="accent">'self' *.stripe.com *.youtube.com … web-sandbox.oaiusercontent.com</span></p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent">&lt;iframe</span> src="https://web-sandbox.oaiusercontent.com"&gt;</p>
+  <p class="ml-8">&lt;script&gt;initializeApp()&lt;/script&gt;</p>
+    <p class="ml-8"><span class="accent">&lt;iframe</span> srcdoc="…" sandbox="allow-scripts allow-same-origin"&gt;</p>
+  <p class="ml-12"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-8"><span class="accent">&lt;/iframe&gt;</span></p>
+  <p class="ml-4"><span class="accent">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<!--
+one sandbox page on web-sandbox.oaiusercontent.com used to load resource and create inner iframe with srcdoc and sandbox allow-scripts allow-same-origin
+
+-->
+
+---
+
+# The double iframe on [app-specific subdomain]{.accent}
+
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p class="opacity-40">chatgpt.com Content-Security-Policy</p>
+  <p class="opacity-40">script-src 'nonce-…' https://*.chatgpt.com</p>
+  <p>frame-src <span class="accent">'self' *.stripe.com *.youtube.com … *.web-sandbox.oaiusercontent.com</span></p>
+</div>
+<br/>
+<div class="card mt-2 font-['Roboto_Mono'] text-[0.65em] leading-[1.8] w-max mx-auto">
+  <p><span class="opacity-40">&lt;body&gt;</span></p>
+  <p class="ml-4"><span class="accent">&lt;iframe</span> src="https://abc123.web-sandbox.oaiusercontent.com"&gt;</p>
+  <p class="ml-8 opacity-40">&lt;script&gt;initializeApp()&lt;/script&gt;</p>
+    <p class="ml-8 opacity-40"><span class="accent">&lt;iframe</span> srcdoc="…" sandbox="allow-scripts allow-same-origin"&gt;</p>
+  <p class="ml-12"><span class="opacity-40">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p class="ml-8"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p class="ml-4"><span class="accent opacity-40">&lt;/iframe&gt;</span></p>
+  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+</div>
+
+<!--
+same sandbox loaded on all subdomains of web-sandbox.oaiusercontent.com
+still use subdomain even if same content for app localStorage isolation
 -->
 
 ---
@@ -157,7 +366,7 @@ Every production host has a Content Security Policy. frame-src controls which do
 
 ```mermaid
 flowchart LR
-  Host["🌐 Host page"] -->|"frame-src ✓"| Outer["📦 Sandbox proxy"]
+  Host["🌐 Host page"] -->|"frame-src ✓"| Outer["📦 Sandbox page"]
   Outer -->|"postMessage"| Inner["🔒 Per-app CSP"]
   Inner --> App["⚡ Your App"]
 ```
@@ -423,27 +632,50 @@ Four takeaways. One: the double iframe isn't defense-in-depth — it solves a CS
 
 ---
 
-# Scan, star, [win a mask]{.accent}
+## layout: section
 
-<div class="flex items-center justify-center gap-16 mt-6">
-  <div>
-    <img src="/qr-skybridge.svg" class="w-64 h-64" alt="QR code to Skybridge GitHub" />
+# [Demo]{.accent} — CSP Inspector
+
+<!--
+Now let me show you this in action. Skybridge ships with devtools that let you inspect the actual CSP policies applied to your app at runtime — across every host. Let me switch to the browser and walk you through the CSP inspector.
+-->
+
+---
+
+# Build MCP Apps with [Skybridge]{.accent}
+
+<div class="flex items-center gap-16 mt-4">
+  <div class="flex flex-col items-center gap-6">
+    <img src="/qr-skybridge.svg" class="w-56 h-56" alt="QR code to Skybridge GitHub" />
+    <p class="text-xs font-mono opacity-70">github.com/alpic-ai/skybridge</p>
   </div>
-  <div class="space-y-4">
-    <p class="text-2xl font-semibold">1. Scan the QR code</p>
-    <p class="text-2xl font-semibold">2. Star the repo <span class="accent">⭐</span></p>
-    <p class="text-2xl font-semibold">3. Enter the lottery <span class="highlight">🎭</span></p>
-    <p class="text-sm opacity-40 mt-6 font-mono">github.com/alpic-ai/skybridge</p>
+  <div class="space-y-5">
+    <div class="flex items-center gap-4 mb-6">
+      <img src="/logos/skybridge/logo-white.svg" class="h-10" alt="Skybridge" />
+      <span class="text-lg opacity-40">—</span>
+      <p class="text-lg font-mono opacity-60">skybridge.tech</p>
+    </div>
+    <p class="text-xl font-semibold"><span class="highlight">Open-source framework</span> for building MCP Apps</p>
+    <ul class="text-base opacity-60 space-y-1 my-1">
+      <li>End-to-end typesafety</li>
+      <li>Modern development environment</li>
+      <li>Unified APIs for host cross-compatibility</li>
+    </ul>
+    <div class="card mt-4 flex items-center gap-4">
+      <p class="text-lg font-semibold"><span class="accent">⭐</span> Star the repo</p>
+      <span class="opacity-30">→</span>
+      <p class="text-base"><span class="highlight font-semibold">enter the lottery</span> to win a mask <span class="opacity-60">🎭</span></p>
+    </div>
   </div>
 </div>
 
 <!--
-Before we wrap up — scan this QR code, it takes you to the Skybridge GitHub repo. Star the project, and you're automatically entered in our lottery to win a mask. Go ahead, I'll wait. It takes 5 seconds.
+Everything I just demoed — the CSP inspector, permissions devtools, cross-host testing — it all ships with Skybridge. It's our open-source framework for building MCP Apps. Works on ChatGPT, Claude, VSCode, Goose, Postman — anywhere MCP runs. Scan the QR code, check out the repo, try it on your next project. And if you star it, you're automatically entered in our lottery to win a mask. Takes 5 seconds — go ahead, I'll wait.
 -->
 
 ---
-layout: end
----
+
+## layout: end
 
 # [Thank you!]{.accent}
 

@@ -141,6 +141,11 @@ td {
   margin-bottom: auto;
 }
 
+/* ── Inline code on dark backgrounds ──────────────── */
+.alpic-dark-bg :not(pre) > code {
+  color: var(--alpic-text);
+}
+
 /* ── Code blocks ────────────────────────────────── */
 .slidev-code-wrapper {
   border-radius: 8px;
