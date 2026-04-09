@@ -31,7 +31,7 @@ Hi everyone! I'm Frederic, co-founder at Alpic — we build infrastructure for A
 
 ---
 
-# What are [MCT & ChatGPT Apps]{.accent}?
+# What are [MCP & ChatGPT Apps]{.accent}?
 
 <div class="mt-6 flex items-center gap-12">
   <div>
@@ -107,13 +107,13 @@ If ui.resourceUri is present and host supports MCP Apps, host renders tool resul
 # Zooming into the [View]{.accent}
 
 <div class="card mt-6 font-['Roboto_Mono'] text-[0.7em] leading-[1.8] w-max mx-auto">
-  <p><span class="opacity-40">&lt;body&gt;</span> <span class="opacity-50 highlight">chatgpt.com</span></p>
-  <p class="ml-4"><span class="accent">&lt;iframe</span> <span class="opacity-50">src="<span class="highlight">abc123.web-sandbox.oaiusercontent.com</span>"&gt;</span></p>
-  <p class="ml-8"><span class="accent">&lt;iframe</span> <span class="opacity-50">src="about:blank"&gt;</span></p>
-  <p class="ml-12"><span class="opacity-60">&lt;div&gt; Your App &lt;/div&gt;</span></p>
+  <p>&lt;body&gt; <span class=" highlight">chatgpt.com</span></p>
+  <p class="ml-4"><span class="accent">&lt;iframe</span> src="<span class="highlight">https://alpic.web-sandbox.oaiusercontent.com</span>"&gt;</p>
+  <p class="ml-8"><span class="accent">&lt;iframe</span> src="about:blank"&gt;</p>
+  <p class="ml-12">&lt;div&gt; Your App &lt;/div&gt;</p>
   <p class="ml-8"><span class="accent">&lt;/iframe&gt;</span></p>
   <p class="ml-4"><span class="accent">&lt;/iframe&gt;</span></p>
-  <p><span class="opacity-40">&lt;/body&gt;</span></p>
+  <p>&lt;/body&gt;</p>
 </div>
 
 <p class="text-2xl mt-8 text-center font-semibold">Why <span class="accent">two</span> iframes?</p>
@@ -155,7 +155,26 @@ Open DevTools on any ChatGPT app and here's what you'll see. The host page at ch
 </div>
 
 <!--
-Before we look at iframes, let's look at what ChatGPT sends with every HTTP response. A Content-Security-Policy header — a set of directives that tell the browser exactly what this page is allowed to load. default-src is the fallback: if a specific directive isn't set, default-src applies. script-src controls which scripts can run — ChatGPT uses a nonce, a per-request token, so only scripts with the matching token execute. style-src for stylesheets. connect-src controls where fetch, XHR, and WebSocket calls can go. img-src for images. And frame-src — which URLs are allowed inside iframes. This last one is about to become very important.
+Content-Security-Policy header — set of directives that tell the browser exactly what this page is allowed to load
+default-src is the fallback: if a specific directive isn't set, default-src applies.
+script-src controls which scripts can run — ChatGPT uses a nonce, a per-request token, so only scripts with the matching token execute.
+style-src for stylesheets.
+connect-src controls where fetch, XHR, and WebSocket calls can go.
+img-src for images.
+And frame-src — which URLs are allowed inside iframes. This last one is about to become very important.
+-->
+
+---
+
+# Rendering external HTML?<br/>[Use iframes]{.accent}
+
+<blockquote class="mt-12 text-2xl leading-relaxed">
+  <p>The <code>&lt;iframe&gt;</code> HTML element represents a <span class="highlight">nested browsing context</span>, embedding another HTML page into the current one.</p>
+  <p class="text-sm opacity-40 mt-4">— MDN Web Docs</p>
+</blockquote>
+
+<!--
+Perfect fit: full DOM and style isolation out of the box, sandbox attribute for fine-grained permission control (scripts, forms, popups — all opt-in), no CSS bleed in either direction, and two loading modes — src fetches from a URL, srcdoc embeds the HTML inline with no network request. It's the only browser primitive designed for rendering untrusted third-party content.
 -->
 
 ---
@@ -418,20 +437,6 @@ declaration used in app validation
 
 ---
 
-# Improving builder [DevX]{.accent}
-
----
-
-## layout: section
-
-# [Demo]{.accent} — CSP Inspector
-
-<!--
-Now let me show you this in action. Skybridge ships with devtools that let you inspect the actual CSP policies applied to your app at runtime — across every host. Let me switch to the browser and walk you through the CSP inspector.
--->
-
----
-
 # Build MCP Apps with [Skybridge]{.accent}
 
 <div class="flex items-center gap-16 mt-4">
@@ -465,28 +470,54 @@ Everything I just demoed — the CSP inspector, permissions devtools, cross-host
 
 ---
 
-## layout: end
+# Improving builder [DevX]{.accent}
 
-# [Thank you!]{.accent}
-
-Questions?
-
-<div class="grid grid-cols-2 gap-12 mt-10">
-  <div class="flex flex-col items-center gap-2">
-    <img src="/logos/skybridge/logo-white.svg" class="h-8" alt="Skybridge" />
-    <p class="text-sm font-mono opacity-50">skybridge.tech</p>
-  </div>
-  <div class="flex flex-col items-center gap-2">
-    <img src="/logos/alpic/logo-white.svg" class="h-8" alt="Alpic" />
-    <p class="text-sm font-mono opacity-50">alpic.ai</p>
+<div class="flex items-center gap-8 mt-4">
+  <img src="/skybridge-csp-inspector.png" class="rounded-lg" style="max-height: 340px;" />
+  <div class="space-y-4">
+    <p class="text-base">Skybridge <span class="accent">CSP Inspector</span></p>
   </div>
 </div>
 
-<div class="speaker-info mt-10 justify-center">
-  <img src="/fred.jpg" alt="Frederic" />
-  <div class="text-left">
-    <p class="font-semibold">Frederic</p>
-    <p class="text-sm opacity-60">Co-founder @ Alpic</p>
+---
+
+# [Demo]{.accent} — CSP Inspector
+
+<!--
+Now let me show you this in action. Skybridge ships with devtools that let you inspect the actual CSP policies applied to your app at runtime — across every host. Let me switch to the browser and walk you through the CSP inspector.
+-->
+
+---
+
+# [Thank you!]{.accent} Questions?
+
+<div class="grid grid-cols-2 gap-12 mt-8">
+  <div class="flex flex-col items-center justify-center gap-6">
+    <div class="flex flex-col items-center gap-2">
+      <img src="/qr-slides.svg" class="w-32 h-32" alt="QR code to slides" />
+      <p class="text-xs font-mono opacity-50">Slides</p>
+    </div>
+    <div class="flex flex-col items-center gap-2">
+      <img src="/qr-skybridge.svg" class="w-32 h-32" alt="QR code to Skybridge" />
+      <p class="text-xs font-mono opacity-50">Skybridge</p>
+    </div>
+  </div>
+  <div class="flex flex-col justify-center gap-6">
+    <div class="flex items-center gap-3">
+      <img src="/logos/skybridge/logo-white.svg" class="h-7" alt="Skybridge" />
+      <p class="text-sm font-mono opacity-50">skybridge.tech</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="/logos/alpic/logo-white.svg" class="h-7" alt="Alpic" />
+      <p class="text-sm font-mono opacity-50">alpic.ai</p>
+    </div>
+    <div class="speaker-info">
+      <img src="/fred.jpg" alt="Frederic" />
+      <div class="text-left">
+        <p class="font-semibold">Frederic</p>
+        <p class="text-sm opacity-60">Co-founder @ Alpic</p>
+      </div>
+    </div>
   </div>
 </div>
 
