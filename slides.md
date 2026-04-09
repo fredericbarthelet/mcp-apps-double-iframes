@@ -31,7 +31,7 @@ Hi everyone! I'm Frederic, co-founder at Alpic — we build infrastructure for A
 
 ---
 
-# What are [AI apps]{.accent}?
+# What are [MCT & ChatGPT Apps]{.accent}?
 
 <div class="mt-6 flex items-center gap-12">
   <div>
@@ -48,10 +48,7 @@ Hi everyone! I'm Frederic, co-founder at Alpic — we build infrastructure for A
     </ul>
   </div>
   <div>
-    <!-- TODO: placeholder — screenshot of a ChatGPT app rendering inside the chat (e.g. a weather widget or map) -->
-    <div class="card flex items-center justify-center" style="width: 320px; height: 200px;">
-      <p class="text-xs opacity-30 text-center">📷 Screenshot: AI app rendering inside ChatGPT chat</p>
-    </div>
+      <video src="/cottages.mp4" autoplay loop muted playsinline style="margin-top: 40px; height: 400px; border-radius: 12px;" />
   </div>
 </div>
 
@@ -391,12 +388,12 @@ inspectable via resources/read request
 
 # You must [declare all domains]{.accent} your app [depends on]{.accent}
 
-| _meta.ui.csp field    | CSP directive(s)                                          | Unlocks                                 |
-| ----------------- | --------------------------------------------------------- | --------------------------------------- |
-| `connectDomains`  | `connect-src`                                             | fetch, XHR, WebSocket                   |
-| `resourceDomains` | `script-src` `style-src` `font-src` `img-src` `media-src` | External scripts, styles, fonts, images |
-| `frameDomains`    | `frame-src`                                               | Nested iframes (maps, video)            |
-| `baseUriDomains`  | `base-uri`                                                | Custom base URIs                        |
+| \_meta.ui.csp field | CSP directive(s)                                          | Unlocks                                 |
+| ------------------- | --------------------------------------------------------- | --------------------------------------- |
+| `connectDomains`    | `connect-src`                                             | fetch, XHR, WebSocket                   |
+| `resourceDomains`   | `script-src` `style-src` `font-src` `img-src` `media-src` | External scripts, styles, fonts, images |
+| `frameDomains`      | `frame-src`                                               | Nested iframes (maps, video)            |
+| `baseUriDomains`    | `base-uri`                                                | Custom base URIs                        |
 
 <!--
 declaration used in app validation
@@ -415,39 +412,13 @@ declaration used in app validation
 <div class="flex items-center gap-8 mt-4">
   <img src="/openai-csp-in-dev.png" class="rounded-lg" style="max-height: 340px;" />
   <div class="space-y-4">
-    <p class="text-base">ChatGPT now <span class="highlight">relaxes CSP in developer mode</span> by default</p>
-    <p class="text-sm opacity-50">Dev apps get unrestricted network access — no need to declare domains while iterating</p>
-    <p class="text-sm opacity-50">Toggle on "Enforce CSP" to test production behavior before shipping</p>
+    <p class="text-base"><span class="accent">Enforce CSP toggle</span> in ChatGPT developer mode</p>
   </div>
 </div>
 
 ---
 
-# Improving builder DevX with [Skybridge]{.accent}
-
-<div class="flex items-center gap-6 mt-6">
-  <img src="/logos/skybridge/icon-only-white.svg" class="h-16" />
-  <p class="text-lg font-mono opacity-60">skybridge.tech</p>
-</div>
-
-<div class="mt-6 grid grid-cols-3 gap-6">
-  <div class="card text-center">
-    <p class="text-sm font-semibold accent mb-2">CSP Inspector</p>
-    <p class="text-xs opacity-50">See the exact policy applied to your app per host — at runtime</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-sm font-semibold accent mb-2">CSP Validation</p>
-    <p class="text-xs opacity-50">Catch missing domains at build time before your fetch silently fails</p>
-  </div>
-  <div class="card text-center">
-    <p class="text-sm font-semibold accent mb-2">Cross-host testing</p>
-    <p class="text-xs opacity-50">Verify CSP behavior across ChatGPT, Claude & Cursor from one codebase</p>
-  </div>
-</div>
-
-<!--
-Skybridge ships with built-in CSP devtools. The inspector shows the exact policy each host applies to your app at runtime. The validator catches missing domains at build time — so you don't discover a blocked fetch in production. And you can test across all hosts from a single codebase.
--->
+# Improving builder [DevX]{.accent}
 
 ---
 
