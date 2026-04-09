@@ -1,0 +1,18 @@
+{
+  "name": "slidev-theme-alpic",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "slidev": ">=0.48.0"
+  },
+  "slidev": {
+    "colorSchema": "both",
+    "defaults": {
+      "fonts": {
+        "sans": "Fira Sans",
+        "mono": "Roboto Mono"
+      },
+      "transition": "slide-left"
+    }
+  }
+}

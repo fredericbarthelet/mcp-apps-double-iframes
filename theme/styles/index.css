@@ -1,0 +1,135 @@
+@import "@fontsource-variable/mozilla-text";
+
+:root {
+  --alpic-bg: #f6ffed;
+  --alpic-bg-alt: #edf7e7;
+  --alpic-accent: #e90060;
+  --alpic-text: #051413;
+  --alpic-highlight: #89f0ec;
+  --alpic-dark: #051413;
+}
+
+/* ── Base ───────────────────────────────────────── */
+.slidev-layout {
+  font-family: "Fira Sans", sans-serif;
+  color: var(--alpic-text);
+}
+
+/* ── Accent helpers (use with MDC: [word]{.accent}) */
+.accent {
+  color: var(--alpic-accent);
+}
+.highlight {
+  color: var(--alpic-highlight);
+}
+
+/* ── Headings ───────────────────────────────────── */
+.slidev-layout h1 {
+  font-family: "Mozilla Text Variable", "Mozilla Text", sans-serif !important;
+  font-weight: 700;
+  font-size: 3.2em !important;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.slidev-layout h2 {
+  font-family: "Mozilla Text Variable", "Mozilla Text", sans-serif !important;
+  font-weight: 700;
+  font-size: 2em !important;
+  line-height: 1.2;
+}
+
+.slidev-layout h3 {
+  font-family: "Mozilla Text Variable", "Mozilla Text", sans-serif !important;
+  font-weight: 600;
+  font-size: 1.4em !important;
+}
+
+/* ── Dark bg grid texture ───────────────────────── */
+.alpic-dark-bg {
+  background-color: var(--alpic-dark);
+  background-image:
+    linear-gradient(rgba(137, 240, 236, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(137, 240, 236, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: #fff;
+}
+
+.alpic-dark-bg h1,
+.alpic-dark-bg h2,
+.alpic-dark-bg h3,
+.alpic-dark-bg h4 {
+  color: #fff;
+}
+
+/* ── Light bg ───────────────────────────────────── */
+.alpic-light-bg {
+  background-color: var(--alpic-bg);
+  color: var(--alpic-text);
+}
+
+/* ── Logo ───────────────────────────────────────── */
+.logo-top-left {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  height: 24px;
+  width: auto;
+  z-index: 20;
+}
+
+/* ── Stat number ────────────────────────────────── */
+.stat {
+  font-family: "Mozilla Text Variable", "Mozilla Text", sans-serif;
+  font-size: 4em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--alpic-accent);
+}
+
+/* ── Cards ──────────────────────────────────────── */
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+.alpic-light-bg .card {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+/* ── Speaker info ───────────────────────────────── */
+.speaker-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.speaker-info img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ── Tables ─────────────────────────────────────── */
+table {
+  font-size: 0.85em;
+  width: 100%;
+}
+th {
+  background: var(--alpic-accent);
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 1rem;
+}
+td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ── Code blocks ────────────────────────────────── */
+.slidev-code-wrapper {
+  border-radius: 8px;
+}

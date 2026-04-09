@@ -1,0 +1,17 @@
+{
+  "name": "mcp-apps-double-iframe",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "slidev build",
+    "dev": "slidev --open",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@fontsource-variable/mozilla-text": "^5.2.2",
+    "@slidev/cli": "^52.11.5",
+    "@slidev/theme-default": "latest",
+    "@slidev/theme-seriph": "latest",
+    "vue": "^3.5.27"
+  }
+}
